@@ -51,17 +51,13 @@ function useReplay() {
   ) {
     const action = replay
 
-    /**
-     * Если действия нет — просто закрываем modal.
-     */
+
     if (!action) {
       dispatch(closeAuthModal())
       return
     }
 
-    /**
-     * Закрываем Login Modal перед продолжением.
-     */
+
     dispatch(closeAuthModal())
 
     /**

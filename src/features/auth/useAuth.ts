@@ -41,15 +41,6 @@ export function useAuth() {
     dispatch(setUser(query.data))
   }, [dispatch, query.data])
 
-  /**
-   * 401 не обрабатываем здесь.
-   *
-   * Axios interceptor является единым местом
-   * обработки истёкшей auth-сессии.
-   *
-   * Это предотвращает двойной clearSession()
-   * и позволяет сохранить replay action.
-   */
 
   const isAuthenticated =
     Boolean(token && user)
@@ -103,10 +94,7 @@ export function useAuth() {
       try {
         await logout()
       } catch {
-        /*
-         * Даже если API logout завершился ошибкой,
-         * локальная auth-сессия должна быть удалена.
-         */
+       
       }
 
       dispatch(clearSession())

@@ -65,9 +65,6 @@ import {
 import type { Seat, TicketType } from '@/types/models'
 import { useAuth } from '@/features/auth/useAuth'
 
-/* ------------------------------------------------------------------ */
-/* Общие стили и хелперы                                               */
-/* ------------------------------------------------------------------ */
 
 const BTN_PRIMARY =
   'rounded-2xl bg-[#ea3829] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-red-950/30 transition-all hover:bg-[#d93123] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:pointer-events-none disabled:opacity-50'
@@ -80,11 +77,9 @@ const CARD = 'rounded-2xl border border-[#1f293a] bg-[#151c27]'
 const LABEL_CLASS =
   'text-[11px] font-bold uppercase tracking-wider text-[#78849b]'
 
-/** Три колонки: контент | линия 1px | правая панель. Отступ 20px с обеих сторон линии. */
 const SPLIT_GRID =
   'grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_1px_380px]'
 
-/** Вертикальный разделитель 1×518px, цвет #1E2031 */
 const VLINE = 'hidden h-[518px] w-px bg-[#1e2031] lg:block'
 
 type SessionInfo = {
@@ -96,18 +91,11 @@ type SessionInfo = {
   format: { name: string }
 }
 
-/**
- * Предварительная цена места до создания hold.
- * ← Если поле коэффициента у TicketType называется иначе, поправьте только эту строку.
- */
 function priceFor(base: number, type: TicketType | undefined) {
   if (!type) return base
   return Math.round(base * type.priceRatio * 100) / 100
 }
 
-/* ------------------------------------------------------------------ */
-/* Field: локальная замена Input (те же пропсы label / error)          */
-/* ------------------------------------------------------------------ */
 
 function Field({
   label,
@@ -147,9 +135,7 @@ function Field({
   )
 }
 
-/* ------------------------------------------------------------------ */
-/* Modal                                                               */
-/* ------------------------------------------------------------------ */
+
 
 export function BookingModal() {
   const dispatch = useDispatch()
@@ -491,7 +477,6 @@ function SeatStep({
     [ticketTypes, minAge],
   )
 
-  /* Предварительный расчёт цены до checkout (итог всё равно считает сервер). */
   const subtotal = selected.reduce(
     (sum, seat) =>
       sum +
@@ -588,7 +573,6 @@ function SeatStep({
 
   return (
     <div className={SPLIT_GRID}>
-      {/* ===== Левая колонка ===== */}
       <div className="flex min-w-0 flex-col items-center">
         {showAlerts ? (
           <div className="mb-6 w-full space-y-3">
@@ -617,7 +601,6 @@ function SeatStep({
           </div>
         ) : null}
 
-        {/* Экран */}
         <div className="mb-8 w-full">
           <div className="flex h-9 w-full items-center justify-center rounded-xl border-t border-[#29354b] bg-[#1b2332] shadow-inner">
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8694a9]">
@@ -626,7 +609,6 @@ function SeatStep({
           </div>
         </div>
 
-        {/* Схема зала: без горизонтальной прокрутки, места сжимаются */}
         <div className="mb-8 w-full">
           {map.sections.map((section) => (
             <section
@@ -680,7 +662,6 @@ function SeatStep({
           ))}
         </div>
 
-        {/* Легенда */}
         <ul className="flex flex-wrap items-center justify-center gap-6 text-[12px] text-[#8694a9]">
           <li className="flex items-center gap-2">
             <i className="h-3.5 w-3.5 rounded-md border border-[#2e3b50] bg-[#18202d]" />
@@ -709,10 +690,8 @@ function SeatStep({
         </ul>
       </div>
 
-      {/* ===== Вертикальная линия ===== */}
       <div className={VLINE} aria-hidden="true" />
 
-      {/* ===== Правая колонка ===== */}
       <aside className="flex flex-col gap-4">
         <h3 className="text-sm font-bold tracking-wide text-white">
           Your seats{' '}
@@ -1090,7 +1069,6 @@ function CheckoutStep({ session }: { session: SessionInfo }) {
       onSubmit={onSubmit}
       noValidate
     >
-      {/* ===== Левая часть: поля (интервал между блоками 24px) ===== */}
       <div className="flex min-w-0 flex-col gap-6">
         <Field
           label="Full Name"
@@ -1144,7 +1122,6 @@ function CheckoutStep({ session }: { session: SessionInfo }) {
           />
         </div>
 
-        {/* Горизонтальная линия 1px #1E2031 до вертикальной линии */}
         <div
           className="h-px w-full bg-[#1e2031]"
           aria-hidden="true"
@@ -1225,10 +1202,8 @@ function CheckoutStep({ session }: { session: SessionInfo }) {
         </div>
       </div>
 
-      {/* ===== Вертикальная линия ===== */}
       <div className={VLINE} aria-hidden="true" />
 
-      {/* ===== Правая часть: Summary ===== */}
       <aside className="flex flex-col gap-4">
         <h3 className="text-sm font-bold tracking-wide text-white">
           Summary

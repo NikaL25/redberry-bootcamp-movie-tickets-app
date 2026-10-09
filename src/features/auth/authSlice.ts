@@ -11,14 +11,7 @@ export type AuthStatus =
   | 'success'
   | 'error'
 
-/**
- * Действие, которое пользователь начал выполнять
- * до авторизации.
- *
- * ВАЖНО:
- * Здесь никогда не храним функции.
- * Redux state должен оставаться serializable.
- */
+
 export type ReplayAction =
   | {
       type: 'book'
@@ -50,20 +43,12 @@ export type AuthState = {
    */
   modal: AuthModalMode
 
-  /**
-   * Отдельное модальное окно профиля.
-   */
+
   profileModal: boolean
 
-  /**
-   * Действие, которое необходимо
-   * продолжить после успешной авторизации.
-   */
+
   replay: ReplayAction
 
-  /**
-   * Ошибка авторизации.
-   */
   errorMessage: string | null
 }
 
@@ -91,11 +76,7 @@ const authSlice = createSlice({
   initialState,
 
   reducers: {
-    /**
-     * Успешная авторизация.
-     *
-     * Используется и после login, и после register.
-     */
+  
     setCredentials(
       state,
       action: PayloadAction<{
@@ -108,13 +89,7 @@ const authSlice = createSlice({
       state.status = 'success'
       state.errorMessage = null
 
-      /**
-       * Replay специально НЕ очищаем.
-       *
-       * Он будет очищен только после того,
-       * как прерванное действие действительно
-       * будет продолжено.
-       */
+    
       state.modal = 'closed'
       state.profileModal = false
 
@@ -126,9 +101,7 @@ const authSlice = createSlice({
       }
     },
 
-    /**
-     * Обновление данных текущего пользователя.
-     */
+    
     setUser(
       state,
       action: PayloadAction<User>,
@@ -138,9 +111,7 @@ const authSlice = createSlice({
       state.errorMessage = null
     },
 
-    /**
-     * Состояние auth-запроса.
-     */
+   
     setAuthStatus(
       state,
       action: PayloadAction<AuthStatus>,
@@ -148,15 +119,7 @@ const authSlice = createSlice({
       state.status = action.payload
     },
 
-    /**
-     * Открытие Login/Register.
-     *
-     * При переключении между модалками
-     * старая ошибка не должна переноситься
-     * в новую форму.
-     *
-     * Replay при этом сохраняется.
-     */
+ 
     openAuthModal(
       state,
       action: PayloadAction<
@@ -169,49 +132,26 @@ const authSlice = createSlice({
       state.status = 'idle'
     },
 
-    /**
-     * Закрытие Login/Register.
-     *
-     * Replay намеренно сохраняем.
-     *
-     * Это позволяет закрыть модалку и,
-     * например, открыть её снова, не потеряв
-     * защищённое действие.
-     */
+ 
     closeAuthModal(state) {
       state.modal = 'closed'
       state.errorMessage = null
       state.status = 'idle'
     },
 
-    /**
-     * Открытие Profile Modal.
-     */
+    
     openProfileModal(state) {
       state.profileModal = true
       state.modal = 'closed'
       state.errorMessage = null
     },
 
-    /**
-     * Закрытие Profile Modal.
-     */
+   
     closeProfileModal(state) {
       state.profileModal = false
     },
 
-    /**
-     * Сохранение защищённого действия.
-     *
-     * Например:
-     *
-     * dispatch(
-     *   setReplay({
-     *     type: 'book',
-     *     sessionId: 123,
-     *   }),
-     * )
-     */
+
     setReplay(
       state,
       action: PayloadAction<ReplayAction>,
@@ -219,19 +159,12 @@ const authSlice = createSlice({
       state.replay = action.payload
     },
 
-    /**
-     * Очистка replay.
-     *
-     * Вызывается только после того,
-     * как действие действительно продолжено.
-     */
+ 
     clearReplay(state) {
       state.replay = null
     },
 
-    /**
-     * Ошибка авторизации.
-     */
+   
     setAuthError(
       state,
       action: PayloadAction<string | null>,
@@ -243,15 +176,6 @@ const authSlice = createSlice({
       }
     },
 
-    /**
-     * API вернул 401.
-     *
-     * replay можно передать непосредственно
-     * из Axios.
-     *
-     * Если replay не передан, уже сохранённый
-     * replay НЕ удаляется.
-     */
     handleUnauthorized(
       state,
       action: PayloadAction<
@@ -268,26 +192,7 @@ const authSlice = createSlice({
       }
     },
 
-    /**
-     * Очистка истёкшей сессии.
-     *
-     * ВАЖНО:
-     * replay сохраняется.
-     *
-     * Сценарий:
-     *
-     * protected action
-     *      ↓
-     * 401
-     *      ↓
-     * clearSession
-     *      ↓
-     * login modal
-     *      ↓
-     * successful login
-     *      ↓
-     * replay
-     */
+   
     clearSession(state) {
       state.user = null
       state.token = null
@@ -300,19 +205,9 @@ const authSlice = createSlice({
         localStorage.removeItem(TOKEN_KEY)
       }
 
-      /**
-       * НЕ делаем:
-       *
-       * state.replay = null
-       */
     },
 
-    /**
-     * Полный logout пользователя.
-     *
-     * В отличие от clearSession:
-     * replay здесь удаляется.
-     */
+ 
     logout(state) {
       state.user = null
       state.token = null
