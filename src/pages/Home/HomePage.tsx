@@ -12,16 +12,7 @@ import {
 import { useAuth } from '@/features/auth/useAuth'
 import { parseApiError } from '@/utils/errorHandling'
 
-/**
- * Основной контейнер проекта.
- *
- * Desktop 1920px:
- * 1920 - 1800 = 120px
- * 120 / 2 = 60px с каждой стороны.
- *
- * На меньших экранах контейнер занимает всю доступную ширину
- * с адаптивным внутренним отступом.
- */
+
 const CONTAINER =
   'mx-auto w-full max-w-[1800px] px-5 sm:px-8 lg:px-0'
 
