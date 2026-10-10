@@ -1010,6 +1010,15 @@ function CheckoutStep({ session }: { session: SessionInfo }) {
 
     setSubmitted(true)
 
+    // Check if hold is still valid before submitting order
+    if (!hold || !hold.isLive) {
+      dispatch(expireHold())
+      dispatch(
+        setBanner('Your seat hold has expired. Please select seats again.')
+      )
+      return
+    }
+
     if (pay.isPending || seconds <= 0) {
       return
     }
