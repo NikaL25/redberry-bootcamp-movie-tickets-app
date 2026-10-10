@@ -208,15 +208,19 @@ function SessionCard({
       }`}
     >
       <span className="flex items-stretch w-51.75">
-        <div className='w-[124px] flex justify-center'>
-        <span className="flex flex-col justify-center px-3.5 py-2.5">
-          <span className="text-[20px] font-bold tracking-tight text-white px-2">{session.time}</span>
-          <span className="mt-1 flex items-center gap-1">
-            <span className="max-w-31 truncate text-[12px] font-medium uppercase text-[#A9A9A9] px-1">
-              {session.language.code ?? session.language.name}
-            </span>
-            <span className="rounded bg-[#101726] px-1.5 py-px text-[12px] font-semibold uppercase text-slate-300">
-              {session.format.name}
+        <div className="w-[124px] flex justify-center">
+    <span className="flex flex-col justify-center px-3.5 py-2.5">
+      <span className="w-full text-center text-[20px] font-bold tracking-tight text-white tabular-nums">
+        {session.time}
+      </span>
+
+      <span className="mt-1 flex items-center justify-center gap-1">
+        <span className="max-w-31 truncate text-[12px] font-medium uppercase text-[#A9A9A9] px-1">
+          {session.language.code ?? session.language.name}
+        </span>
+
+        <span className="rounded bg-[#101726] px-1.5 py-px text-[12px] font-semibold uppercase text-slate-300">
+          {session.format.name}
             </span>
           </span>
         </span>
