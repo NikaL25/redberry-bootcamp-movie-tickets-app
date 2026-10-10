@@ -3,9 +3,20 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { ProfileForm } from '@/features/profile/ProfileForm'
 import { TicketsPanel } from '@/features/profile/TicketsPanel'
 
+import { useTickets } from '@/features/profile/profileQueries'
 
-function useTicketsCount(): number | undefined {
-  return undefined
+/**
+ * Returns the total count of user's tickets (upcoming + past).
+ * Uses the existing useTickets hook from the profile feature.
+ */
+function useTicketsCount(): number {
+  const upcoming = useTickets('upcoming')
+  const past = useTickets('past')
+  
+  const upcomingCount = upcoming.data?.length ?? 0
+  const pastCount = past.data?.length ?? 0
+  
+  return upcomingCount + pastCount
 }
 
 const TAB_BASE =
@@ -52,14 +63,12 @@ export default function ProfilePage() {
             }`}
           >
             <span>My Tickets</span>
-            {ticketsCount ? (
               <span
                 aria-label={`${ticketsCount} tickets`}
                 className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff3b1d] px-1 text-[11px] font-bold text-white"
               >
                 {ticketsCount}
               </span>
-            ) : null}
             {tab === 'tickets' ? <Underline /> : null}
           </button>
         </nav>
