@@ -103,4 +103,3 @@ Feel free to explore the features, browse movies, and try the booking flow.
 
 ---
 
-Made with ❤️ during the Redberry Bootcamp.

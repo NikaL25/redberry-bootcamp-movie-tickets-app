@@ -745,7 +745,6 @@ export default function MovieDetailsPage() {
             ) : null}
           </div>
 
-          {/* Правая колонка: детали */}
           <MovieDetailsSidebar movie={movie} />
         </main>
       </div>
