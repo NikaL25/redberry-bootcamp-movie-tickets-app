@@ -503,19 +503,30 @@ function SeatStep({
       dispatch(setBanner(null))
     },
 
-    onError(error) {
-      const parsed = parseApiError(error)
+ onError(error) {
+  const parsed = parseApiError(error)
 
-      if (parsed.status === 409 && parsed.contested) {
-        dispatch(dropContested(parsed.contested))
+  if (parsed.status === 409 && parsed.contested) {
+    dispatch(dropContested(parsed.contested))
+    onReload()
+    return
+  }
 
-        onReload()
+  if (
+    parsed.status === 422 &&
+    parsed.message.includes('session has already started')
+  ) {
+    dispatch(
+      setBanner(
+        'This session has already started. Please choose another showtime.',
+      ),
+    )
+    onReload()
+    return
+  }
 
-        return
-      }
-
-      dispatch(setBanner(parsed.message))
-    },
+  dispatch(setBanner(parsed.message))
+},
   })
 
   if (!map) {

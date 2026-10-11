@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { ErrorBanner, Spinner } from '@/components/feedback/Status'
 import { useMovie, useMovieSessions } from '@/features/movies/moviesQueries'
 import { useBookingFlow } from '@/features/booking/useBookingFlow'
+import { useDeepLinkBooking } from '@/features/booking/useDeepLinkBooking'
 import { useAuth } from '@/features/auth/useAuth'
 import type { MovieDetail, Session } from '@/types/models'
 import { formatGel, formatReleaseDate } from '@/utils/formatters'
@@ -619,6 +620,16 @@ export default function MovieDetailsPage() {
   }, [movie?.availableDates, initialSessionDates])
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+
+  /**
+   * Sessions page hands over through a deep link:
+   *
+   *   /movies/:slug?session=<id>&date=<YYYY-MM-DD>
+   *
+   * The seat picker for that session opens automatically on top of the page,
+   * and the date it belongs to is pre-selected above.
+   */
+  useDeepLinkBooking({ onDateLinked: setSelectedDate })
 
   /**
    * The selected date must always be one of

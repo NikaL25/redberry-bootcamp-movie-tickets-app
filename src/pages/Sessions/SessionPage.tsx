@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Ticket } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { EmptyState, ErrorBanner, Spinner } from '@/components/feedback/Status'
-import { useBookingFlow } from '@/features/booking/useBookingFlow'
 import { useMovie } from '@/features/movies/moviesQueries'
 import { useFilterOptions, useSessions } from '@/features/sessions/sessionsQueries'
 import { useAuth } from '@/features/auth/useAuth'
@@ -261,24 +260,43 @@ function Filters({
 
 
 
-function SessionTicket({ session }: { session: Session }) {
-  const { startBooking } = useBookingFlow()
+function SessionTicket({ session, movieSlug }: { session: Session; movieSlug: string }) {
+  const navigate = useNavigate()
   const { user } = useAuth()
 
   const soldOut = session.isSoldOut || session.seatsLeft <= 0
   const tooYoung = user?.age != null && user.age < session.movie.ageRating.minAge
-  const ageNotSet = user?.age == null
-  const disabled = soldOut || tooYoung || ageNotSet
+  const disabled = soldOut || tooYoung
   const lowAvailability = session.seatsLeft > 0 && session.seatsLeft <= 5
+
+  /**
+   * Hand the visitor over to the movie page and ask it to open the seat
+   * picker for this exact session:
+   *
+   *   /movies/:slug?session=<id>&date=<YYYY-MM-DD>
+   *
+   * The movie page consumes the params and, when the visitor is not allowed
+   * to book yet, the booking flow opens login / profile instead and replays
+   * the booking once that is done.
+   */
+  function startBooking(id: number): void {
+    const params = new URLSearchParams({ session: String(id) })
+
+    if (session.date) {
+      params.set('date', session.date)
+    }
+
+    navigate(`/movies/${movieSlug}?${params.toString()}`)
+  }
 
   return (
     <button
       type="button"
-      disabled={disabled} 
-      title={tooYoung ? `You must be at least ${session.movie.ageRating.minAge}` : ageNotSet ? 'Age verification required' : undefined}
+      disabled={disabled}
+      title={tooYoung ? `You must be at least ${session.movie.ageRating.minAge}` : undefined}
       aria-label={`${session.time}, ${session.language.name}, ${session.format.name}, ${
         soldOut ? 'sold out' : `${session.seatsLeft} seats left`
-      }, ${formatGel(session.price)}${ageNotSet ? ', age verification required' : ''}`}
+      }, ${formatGel(session.price)}`}
       onClick={() => startBooking(session.id)}
       className={`flex w-full flex-col justify-between rounded-xl border bg-[#111421] p-3.5 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff3b19] ${
         disabled
@@ -457,7 +475,7 @@ function SessionResults({
 
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
                   {group.sessions.map((session) => (
-                    <SessionTicket key={session.id} session={session} />
+                    <SessionTicket key={session.id} session={session} movieSlug={group.movie.slug} />
                   ))}
                 </div>
               </article>

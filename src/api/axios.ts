@@ -17,52 +17,46 @@ import { parseApiError } from '@/utils/errorHandling'
 
 import type { store as AppStore } from '@/app/store'
 
-
 type AuthRequestConfig = InternalAxiosRequestConfig & {
   authReplay?: ReplayAction
 }
 
 let storeRef: typeof AppStore | null = null
 
-
-export function injectStore(
-  store: typeof AppStore,
-) {
+export function injectStore(store: typeof AppStore) {
   storeRef = store
 }
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-
   headers: {
     Accept: 'application/json',
   },
 })
 
+// Request interceptor
+api.interceptors.request.use((config) => {
+  console.log('[API REQUEST]', {
+    method: config.method?.toUpperCase(),
+    baseURL: config.baseURL,
+    url: config.url,
+    fullURL: `${config.baseURL ?? ''}${config.url ?? ''}`,
+  })
 
-api.interceptors.request.use(
-  (config) => {
-    const token =
-      storeRef?.getState().auth.token ??
-      (
-        typeof window !== 'undefined'
-          ? localStorage.getItem(TOKEN_KEY)
-          : null
-      )
+  const token =
+    storeRef?.getState().auth.token ??
+    (typeof window !== 'undefined'
+      ? localStorage.getItem(TOKEN_KEY)
+      : null)
 
-    if (token) {
-      config.headers.Authorization =
-        `Bearer ${token}`
-    }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
 
-    return config
-  },
-)
+  return config
+})
 
-
-function isCredentialRequest(
-  url: string,
-): boolean {
+function isCredentialRequest(url: string): boolean {
   const normalizedUrl = url.toLowerCase()
 
   return (
@@ -71,16 +65,23 @@ function isCredentialRequest(
   )
 }
 
-
 function getRequestReplay(
   config: AuthRequestConfig | undefined,
 ): ReplayAction {
   return config?.authReplay ?? null
 }
 
-
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('[API RESPONSE]', {
+      method: response.config.method?.toUpperCase(),
+      url: response.config.url,
+      status: response.status,
+    })
+
+    return response
+  },
 
   (error: AxiosError) => {
     const parsed = parseApiError(error)
@@ -88,10 +89,19 @@ api.interceptors.response.use(
     const config =
       error.config as AuthRequestConfig | undefined
 
-    const url = config?.url ?? ''
+    console.error('[API ERROR]', {
+      method: config?.method?.toUpperCase(),
+      baseURL: config?.baseURL,
+      url: config?.url,
+      status: parsed.status,
+      message: parsed.message,
+      responseData: error.response?.data,
+      responseURL: error.response?.config.url,
+      responseMethod: error.response?.config.method,
+    })
 
-    const isCredentialCall =
-      isCredentialRequest(url)
+    const url = config?.url ?? ''
+    const isCredentialCall = isCredentialRequest(url)
 
     if (
       parsed.status === 401 &&
@@ -100,12 +110,10 @@ api.interceptors.response.use(
     ) {
       const state = storeRef.getState()
 
- 
       let replay =
         getRequestReplay(config) ??
         state.auth.replay
 
-   
       if (
         !replay &&
         state.booking?.isOpen &&
@@ -117,23 +125,15 @@ api.interceptors.response.use(
         }
       }
 
-    
       if (replay) {
-        storeRef.dispatch(
-          setReplay(replay),
-        )
+        storeRef.dispatch(setReplay(replay))
       }
 
-    
-      storeRef.dispatch(
-        clearSession(),
-      )
+      storeRef.dispatch(clearSession())
 
       storeRef.dispatch(
         handleUnauthorized(
-          replay
-            ? { replay }
-            : undefined,
+          replay ? { replay } : undefined,
         ),
       )
     }
