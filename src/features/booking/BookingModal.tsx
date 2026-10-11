@@ -493,7 +493,7 @@ function SeatStep({
         sessionId,
         selected.map((seat) => ({
           seatId: seat.seatId,
-          ticketType: seat.ticketType,
+          ticketType: seat.ticketType ?? 'adult',
         })),
       ),
 
