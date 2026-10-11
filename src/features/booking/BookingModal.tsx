@@ -54,6 +54,7 @@ import {
   formatMobileDisplay,
   formatCardNumber,
   formatExpiry,
+  hasSessionStarted,
 } from '@/utils/formatters'
 
 import { validateCheckout } from '@/utils/validation'
@@ -282,6 +283,14 @@ function BookingFlow({
 
   const session = sessionQuery.data
 
+  /*
+   * Deep links / stale tabs can point at a session that has already begun.
+   * The server refuses holds for it (422), so do not show a seat map that
+   * can never be checked out. Checkout/confirmation steps are unaffected.
+   */
+  const sessionStarted =
+    step === 'seats' && hasSessionStarted(session.startsAt)
+
   return (
     <div className="relative w-full rounded-[32px] border border-[#1b2230] bg-[#0c1017] p-7 text-white shadow-2xl md:p-9">
       <BookingHeader
@@ -291,7 +300,11 @@ function BookingFlow({
         onClose={onClose}
       />
 
-      {step === 'seats' ? (
+      {sessionStarted ? (
+        <ErrorBanner message="This session has already started. Please choose another showtime." />
+      ) : null}
+
+      {step === 'seats' && !sessionStarted ? (
         <SeatStep
           sessionId={sessionId}
           minAge={session.movie.ageRating.minAge}

@@ -78,3 +78,18 @@ export function formatExpiry(value: string) {
   if (digits.length <= 2) return digits
   return `${digits.slice(0, 2)}/${digits.slice(2)}`
 }
+
+/**
+ * True when a session has already begun.
+ *
+ * `startsAt` is an ISO-8601 string with an explicit UTC offset
+ * (e.g. 2026-10-11T10:00:00+00:00), so Date.parse yields an absolute
+ * instant and the comparison is independent of the browser timezone.
+ * The API rejects holds for such sessions with 422 "That session has
+ * already started.", so the UI must not offer them for booking.
+ */
+export function hasSessionStarted(startsAt: string, now: number = Date.now()) {
+  const startsAtMs = Date.parse(startsAt)
+  return Number.isFinite(startsAtMs) && startsAtMs <= now
+}
+

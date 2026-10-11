@@ -9,7 +9,7 @@ import { useBookingFlow } from '@/features/booking/useBookingFlow'
 import { useDeepLinkBooking } from '@/features/booking/useDeepLinkBooking'
 import { useAuth } from '@/features/auth/useAuth'
 import type { MovieDetail, Session } from '@/types/models'
-import { formatGel, formatReleaseDate } from '@/utils/formatters'
+import { formatGel, formatReleaseDate, hasSessionStarted } from '@/utils/formatters'
 import { parseApiError } from '@/utils/errorHandling'
 
 type SortOption = 'Showtime: earliest first' | 'Showtime: latest first' | 'Price: low to high'
@@ -176,10 +176,13 @@ function SessionCard({
 
   const tooYoung = user?.age != null && minimumAge > 0 && user.age < minimumAge
 
-  const disabled = soldOut || tooYoung
+  // The API rejects holds for sessions that already began (422), so never offer them.
+  const started = hasSessionStarted(session.startsAt)
+
+  const disabled = soldOut || tooYoung || started
 
   const handleBooking = () => {
-    if (disabled) {
+    if (disabled || hasSessionStarted(session.startsAt)) {
       return
     }
 
@@ -191,7 +194,11 @@ function SessionCard({
       type="button"
       disabled={disabled}
       title={
-        tooYoung ? `You must be at least ${minimumAge} years old to book this session.` : undefined
+        started
+          ? 'This session has already started.'
+          : tooYoung
+            ? `You must be at least ${minimumAge} years old to book this session.`
+            : undefined
       }
       aria-label={[
         session.time,
@@ -233,7 +240,9 @@ function SessionCard({
           <span className="text-[18px] font-bold text-[#EC3013]">{formatGel(session.price)}</span>
 
           <span className="mt-1 flex items-center gap-1 text-[12px]">
-            {soldOut ? (
+            {started ? (
+              <span className="text-slate-400">Started</span>
+            ) : soldOut ? (
               <span className="text-slate-400">Sold out</span>
             ) : tooYoung ? (
               <span className="text-[#EC3013]">Age {minimumAge}+</span>

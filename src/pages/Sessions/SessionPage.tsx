@@ -13,7 +13,14 @@ import { useUrlFilters } from '@/features/sessions/useUrlFilters'
 import type { SessionFilters } from '@/types/api'
 import type { FilterOptions, Movie, MovieDetail, Session, SessionGroup } from '@/types/models'
 
-import { dayNumber, formatGel, formatReleaseDate, nextDays, weekdayShort } from '@/utils/formatters'
+import {
+  dayNumber,
+  formatGel,
+  formatReleaseDate,
+  hasSessionStarted,
+  nextDays,
+  weekdayShort,
+} from '@/utils/formatters'
 import { parseApiError } from '@/utils/errorHandling'
 
 
@@ -266,7 +273,10 @@ function SessionTicket({ session, movieSlug }: { session: Session; movieSlug: st
 
   const soldOut = session.isSoldOut || session.seatsLeft <= 0
   const tooYoung = user?.age != null && user.age < session.movie.ageRating.minAge
-  const disabled = soldOut || tooYoung
+  // The API still lists today's sessions that have already begun, but it
+  // rejects holds for them (422 "That session has already started.").
+  const started = hasSessionStarted(session.startsAt)
+  const disabled = soldOut || tooYoung || started
   const lowAvailability = session.seatsLeft > 0 && session.seatsLeft <= 5
 
   /**
@@ -280,6 +290,10 @@ function SessionTicket({ session, movieSlug }: { session: Session; movieSlug: st
    * the booking once that is done.
    */
   function startBooking(id: number): void {
+    if (hasSessionStarted(session.startsAt)) {
+      return
+    }
+
     const params = new URLSearchParams({ session: String(id) })
 
     if (session.date) {
@@ -293,9 +307,15 @@ function SessionTicket({ session, movieSlug }: { session: Session; movieSlug: st
     <button
       type="button"
       disabled={disabled}
-      title={tooYoung ? `You must be at least ${session.movie.ageRating.minAge}` : undefined}
+      title={
+        started
+          ? 'This session has already started.'
+          : tooYoung
+            ? `You must be at least ${session.movie.ageRating.minAge}`
+            : undefined
+      }
       aria-label={`${session.time}, ${session.language.name}, ${session.format.name}, ${
-        soldOut ? 'sold out' : `${session.seatsLeft} seats left`
+        started ? 'already started' : soldOut ? 'sold out' : `${session.seatsLeft} seats left`
       }, ${formatGel(session.price)}`}
       onClick={() => startBooking(session.id)}
       className={`flex w-full flex-col justify-between rounded-xl border bg-[#111421] p-3.5 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff3b19] ${
@@ -314,7 +334,9 @@ function SessionTicket({ session, movieSlug }: { session: Session; movieSlug: st
       <span className="mb-3 mt-2 flex items-center justify-between gap-2 text-[11px]">
         <span className="min-w-0 flex-1 text-[12px] truncate text-[#A9A9A9]">{session.language.name}</span>
 
-        {soldOut ? (
+        {started ? (
+          <span className="shrink-0 font-medium text-[#62708a]">Started</span>
+        ) : soldOut ? (
           <span className="shrink-0 font-medium text-[#62708a]">Sold out</span>
         ) : (
           <span
