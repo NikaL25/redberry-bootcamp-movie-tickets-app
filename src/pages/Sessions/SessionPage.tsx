@@ -267,17 +267,18 @@ function SessionTicket({ session }: { session: Session }) {
 
   const soldOut = session.isSoldOut || session.seatsLeft <= 0
   const tooYoung = user?.age != null && user.age < session.movie.ageRating.minAge
-  const disabled = soldOut || tooYoung
+  const ageNotSet = user?.age == null
+  const disabled = soldOut || tooYoung || ageNotSet
   const lowAvailability = session.seatsLeft > 0 && session.seatsLeft <= 5
 
   return (
     <button
       type="button"
       disabled={disabled} 
-      title={tooYoung ? `You must be at least ${session.movie.ageRating.minAge}` : undefined}
+      title={tooYoung ? `You must be at least ${session.movie.ageRating.minAge}` : ageNotSet ? 'Age verification required' : undefined}
       aria-label={`${session.time}, ${session.language.name}, ${session.format.name}, ${
         soldOut ? 'sold out' : `${session.seatsLeft} seats left`
-      }, ${formatGel(session.price)}`}
+      }, ${formatGel(session.price)}${ageNotSet ? ', age verification required' : ''}`}
       onClick={() => startBooking(session.id)}
       className={`flex w-full flex-col justify-between rounded-xl border bg-[#111421] p-3.5 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff3b19] ${
         disabled
